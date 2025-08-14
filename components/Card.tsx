@@ -1,0 +1,1 @@
+import Link from 'next/link';export default function Card({title,href}:{title:string,href?:string}){const inner=(<div className='rounded-xl p-5 border border-white/10 bg-white/5 hover:bg-white/10 transition'><h3 className='text-xl font-semibold'>{title}</h3></div>);return href?<Link href={href}>{inner}</Link>:inner}

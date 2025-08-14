@@ -1,0 +1,90 @@
+{
+  "routes": {
+    "technical": [
+      "/technology",
+      "/feedstocks",
+      "/products",
+      "/validation"
+    ],
+    "financial": [
+      "/investment",
+      "/markets",
+      "/financials",
+      "/risk",
+      "/impact"
+    ],
+    "buyers": [
+      "/products",
+      "/applications",
+      "/quality",
+      "/contact-sales"
+    ],
+    "suppliers": [
+      "/supply-feedstock",
+      "/accepted-materials",
+      "/partnerships",
+      "/case-studies"
+    ]
+  },
+  "feedstocks": [
+    {
+      "slug": "msw",
+      "title": "Municipal Solid Waste (MSW)",
+      "problems": [
+        "Methane emissions from landfills",
+        "Landfill expansion & contamination"
+      ],
+      "yields": {
+        "biochar": "~30%",
+        "wood_vinegar": "~24%",
+        "light_oil": "~16%",
+        "heavy_oil": "~3%",
+        "gas": "~27%"
+      },
+      "cta": "Discuss MSW diversion & local plant siting"
+    },
+    {
+      "slug": "biosolids",
+      "title": "Biosolids (Human Sewage)",
+      "problems": [
+        "Transport & landfill cost",
+        "Heavy metal control",
+        "Odor & pathogen risk"
+      ],
+      "yields": {
+        "biochar": "~30\u201332%",
+        "wood_vinegar": "~24%",
+        "light_oil": "~16%",
+        "heavy_oil": "~3%",
+        "gas": "~27%"
+      },
+      "cta": "Start a feasibility study for your wastewater district"
+    }
+  ],
+  "products": [
+    {
+      "slug": "biochar",
+      "title": "Biochar / Activated Carbon",
+      "specs": [
+        [
+          "Carbon Content",
+          ">80%"
+        ],
+        [
+          "Use Cases",
+          "Fertilizer base, filtration, concrete additive"
+        ]
+      ]
+    },
+    {
+      "slug": "light-oil",
+      "title": "Light Oils (Renewable Diesel / SAF blendstock)",
+      "specs": [
+        [
+          "Applications",
+          "Diesel, kerosene fractions, green chemicals"
+        ]
+      ]
+    }
+  ]
+}

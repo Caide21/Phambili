@@ -1,0 +1,1 @@
+import fs from 'fs';import path from 'path';export function getContent(){const p=path.join(process.cwd(),'content','content.json');return JSON.parse(fs.readFileSync(p,'utf-8'));}
