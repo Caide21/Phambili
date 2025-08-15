@@ -1,0 +1,40 @@
+/* styles/phambili_portal.css */
+/* Root + slots */
+.phambili-portal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px; /* full circle */
+}
+.phambili-portal__svg {
+  position: absolute;
+  inset: 0;
+}
+.phambili-portal__svg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Spin each ring (target SVG <path>s) */
+.phambili-portal { position: relative; display: grid; place-items: center; border-radius: 9999px; }
+.phambili-portal__svg { position: absolute; inset: 0; }
+.phambili-portal__svg svg { width: 100%; height: 100%; display: block; }
+
+/* base transform setup for per-path rotation */
+.phambili-portal--spin svg path {
+  transform-box: view-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* we will add these classes from JS after sorting by radius */
+.spin-cw  { animation: ring-cw  var(--dur, 28s) linear infinite; }
+.spin-ccw { animation: ring-ccw var(--dur, 28s) linear infinite; }
+
+@keyframes ring-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ring-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .phambili-portal--spin svg path { animation: none !important; }
+}
