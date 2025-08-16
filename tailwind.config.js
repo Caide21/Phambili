@@ -1,3 +1,10 @@
+// tailwind.config.js
+//Tailwind configuration for Phambili.
+//Scans all components/pages/data/styles for class usage.
+//Extends theme with custom keyframes + animations (slow-spin, portalPulse, breathe, ripple).
+//Dark mode is toggled via `class` (see ThemeProvider).
+//Think: “global design tokens + animations for the whole system.”
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -43,6 +50,7 @@ module.exports = {
       },
     },
   },
+  darkMode: "class",
   plugins: [],
   future: { hoverOnlyWhenSupported: true },
 };

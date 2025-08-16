@@ -3,8 +3,9 @@ import "@/styles/globals.css";
 import "@/styles/phambili_portal.css";
 import "@/styles/phambili_portal_rings.css";
 import "@/styles/test.css";
-import "@/styles/globals.css";
 import "@/styles/home.css";
+
+import { ThemeProvider } from "@/components/Theme/ThemeProvider";
 import PhambiliLayout from "@/components/Layout/PhambiliLayout";
 import PageShell from "@/components/Layout/PageShell";
 
@@ -14,17 +15,16 @@ export default function App({ Component, pageProps }) {
   const useShell = shell.useShell !== false;
 
   return (
-    <PhambiliLayout
-      title={shell.siteTitle || "Phambili"}
-      description={shell.siteDescription || "Turning waste into clean energy & products."}
-    >
-      {useShell ? (
-        <PageShell {...shell}>
+    <ThemeProvider>
+      <PhambiliLayout>
+        {useShell ? (
+          <PageShell {...shell}>
+            <Component {...pageProps} />
+          </PageShell>
+        ) : (
           <Component {...pageProps} />
-        </PageShell>
-      ) : (
-        <Component {...pageProps} />
-      )}
-    </PhambiliLayout>
+        )}
+      </PhambiliLayout>
+    </ThemeProvider>
   );
 }
