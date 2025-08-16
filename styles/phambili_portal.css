@@ -1,40 +1,80 @@
-/* styles/phambili_portal.css */
-/* Root + slots */
+/* ============================
+   Phambili Portal
+   Default: single, unified spin (no gaps)
+   Optional (commented below): per-ring alternate spin
+   ============================ */
+
+/* Wrapper */
 .phambili-portal {
   position: relative;
   display: grid;
   place-items: center;
-  border-radius: 9999px; /* full circle */
+  border-radius: 9999px; /* circle */
 }
-.phambili-portal__svg {
-  position: absolute;
-  inset: 0;
-}
-.phambili-portal__svg svg {
+
+/* The element that actually rotates (img or entire <svg>) */
+.phambili-portal__rotor {
   width: 100%;
   height: 100%;
   display: block;
+  animation: phambili-spin 22s linear infinite;
+  will-change: transform;
 }
 
-/* Spin each ring (target SVG <path>s) */
-.phambili-portal { position: relative; display: grid; place-items: center; border-radius: 9999px; }
-.phambili-portal__svg { position: absolute; inset: 0; }
-.phambili-portal__svg svg { width: 100%; height: 100%; display: block; }
+/* Inner content plate (optional) */
+.phambili-portal__plate {
+  position: absolute;
+  inset: 15%;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.25);
+  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(1px);
+}
 
-/* base transform setup for per-path rotation */
-.phambili-portal--spin svg path {
+/* Gentle pulse on hover */
+.phambili-portal:hover .phambili-portal__plate {
+  animation: phambili-breathe 2.6s ease-in-out infinite;
+}
+
+/* ===== Animations ===== */
+@keyframes phambili-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes phambili-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.20); }
+  50%      { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0.06); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .phambili-portal__rotor { animation: none !important; }
+  .phambili-portal:hover .phambili-portal__plate { animation: none !important; }
+}
+
+/* =========================================================
+   OPTIONAL (enable later): per-ring alternate spin
+   – For an inline SVG with groups named ring-1, ring-2, ...
+   – Only useful if your SVG was prepared as concentric rings
+   Uncomment if/when you switch to the ringed SVG + SVGR.
+   ========================================================= */
+
+/*
+.phambili-portal__svg g[id^="ring-"] {
   transform-box: view-box;
   transform-origin: center;
   will-change: transform;
 }
 
-/* we will add these classes from JS after sorting by radius */
-.spin-cw  { animation: ring-cw  var(--dur, 28s) linear infinite; }
-.spin-ccw { animation: ring-ccw var(--dur, 28s) linear infinite; }
+@keyframes phambili-ring-cw  { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+@keyframes phambili-ring-ccw { from { transform: rotate(0) } to { transform: rotate(-360deg) } }
 
-@keyframes ring-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes ring-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+.phambili-portal__svg g[id^="ring-"].cw  { animation: phambili-ring-cw  var(--dur, 26s) linear infinite; }
+.phambili-portal__svg g[id^="ring-"].ccw { animation: phambili-ring-ccw var(--dur, 30s) linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .phambili-portal--spin svg path { animation: none !important; }
+  .phambili-portal__svg g[id^="ring-"].cw,
+  .phambili-portal__svg g[id^="ring-"].ccw { animation: none !important; }
 }
+*/

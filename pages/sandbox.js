@@ -6,24 +6,35 @@ export default function Sandbox() {
   return (
     <div className="grid gap-10 md:grid-cols-[0.95fr_1.05fr]">
       {/* LEFT: Portal demo */}
-      <section className="relative rounded-3xl bg-white/90 shadow-sm ring-1 ring-emerald-200/60 p-8 grid place-items-center">
-        <div className="text-center">
-          <PhambiliPortal
-            href="/contact-sales"
-            label="Enter Portal"
-            size={340}
-            className="shadow-[0_0_0_1px_rgba(16,185,129,0.10)]"
-          />
-          <div className="mt-5 text-sm text-emerald-900/75">
-            SVG source: <code className="px-2 py-0.5 rounded bg-emerald-50">/brand/Phambili_Portal.svg</code>
-          </div>
-          <div className="mt-4">
-            <Link
-              href="/technology"
-              className="inline-flex items-center rounded-full px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
-            >
-              Explore Technology
-            </Link>
+      <section className="relative rounded-3xl bg-white/90 shadow-sm ring-1 ring-emerald-200/60 p-6 md:p-8 grid place-items-center">
+        {/* Bigger, responsive frame for the portal */}
+        <div className="mx-auto grid place-items-center w-[520px] h-[520px] max-w-full sm:max-h-[70vh]">
+          <div className="text-center">
+            <PhambiliPortal
+              href="/contact-sales"
+              label="Enter Portal"
+              size={380}            // a touch larger
+              mode="alternate"      // counter-rotate rings (use "single" to lock)
+              rings={6}             // tweak 6–8 depending on look
+              animated
+              isolateOnHover
+            />
+
+            <div className="mt-5 text-sm text-emerald-900/75">
+              SVG source:{" "}
+              <code className="px-2 py-0.5 rounded bg-emerald-50">
+                /brand/Phambili_Portal.svg
+              </code>
+            </div>
+
+            <div className="mt-4">
+              <Link
+                href="/technology"
+                className="inline-flex items-center rounded-full px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+              >
+                Explore Technology
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -39,11 +50,15 @@ export default function Sandbox() {
           <div className="mt-4 grid sm:grid-cols-2 gap-4">
             <div className="rounded-2xl p-4 bg-emerald-50/60">
               <div className="text-emerald-800 font-medium">Waste → Energy</div>
-              <p className="text-emerald-900/80 text-sm mt-1">Organics diverted from landfill feed BCT modules.</p>
+              <p className="text-emerald-900/80 text-sm mt-1">
+                Organics diverted from landfill feed BCT modules.
+              </p>
             </div>
             <div className="rounded-2xl p-4 bg-sky-50/60">
               <div className="text-sky-900/90 font-medium">Blue Hint</div>
-              <p className="text-emerald-900/80 text-sm mt-1">Subtle sky tones layered on primary emerald.</p>
+              <p className="text-emerald-900/80 text-sm mt-1">
+                Subtle sky tones layered on primary emerald.
+              </p>
             </div>
           </div>
         </div>

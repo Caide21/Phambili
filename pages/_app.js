@@ -1,6 +1,10 @@
 // pages/_app.js
 import "@/styles/globals.css";
 import "@/styles/phambili_portal.css";
+import "@/styles/phambili_portal_rings.css";
+import "@/styles/test.css";
+import "@/styles/globals.css";
+import "@/styles/home.css";
 import PhambiliLayout from "@/components/Layout/PhambiliLayout";
 import PageShell from "@/components/Layout/PageShell";
 

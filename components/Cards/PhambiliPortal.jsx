@@ -1,84 +1,88 @@
-import { useState } from "react";
 import Link from "next/link";
 
 /**
- * Single-spin portal: the entire SVG ring rotates as one unit.
- * Uses Tailwind keyframes you already have (slow-spin, portal-pulse, breathe, ripple).
+ * PhambiliPortal
+ * Default: single, unified spin using an <img src="/brand/Phambili_Portal.svg">
  *
- * Props:
- * - href?: string
- * - label?: string
- * - size?: number|string
- * - className?: string
- * - ringSrc?: string (defaults to your current filename)
- * - animated?: boolean
+ * Later (optional): switch to a ringed SVG via SVGR and enable the
+ * commented "alternate spin" block in the CSS.
  */
 export default function PhambiliPortal({
-  href = "#",
+  href = "/contact-sales",
   label = "Enter Portal",
-  size = 320,
+  size = 380,                  // px or any CSS size string
+  src = "/brand/Phambili_Portal.svg",
   className = "",
-  ringSrc = "/brand/Phambili_Portal.svg",
-  animated = true,
+  showPlate = true,
 }) {
-  const [ripples, setRipples] = useState([]);
   const resolved = typeof size === "number" ? `${size}px` : size;
-
-  const onClick = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const id = Math.random().toString(36).slice(2);
-    setRipples((xs) => [
-      ...xs,
-      { id, x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 },
-    ]);
-    setTimeout(() => setRipples((xs) => xs.filter((z) => z.id !== id)), 750);
-  };
 
   const core = (
     <div
       className={[
-        "relative grid place-items-center select-none rounded-full",
-        animated ? "animate-portal-pulse" : "",
+        "phambili-portal select-none",
         "transition-[filter,transform] duration-500 hover:brightness-[1.04] hover:drop-shadow-lg",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60",
         className,
       ].join(" ")}
       style={{ width: resolved, height: resolved }}
-      onClick={onClick}
-      role="button"
-      aria-label={label}
+      role="img"
+      aria-label="Phambili Portal"
       tabIndex={0}
     >
-      {/* exact SVG ring, whole element spins */}
-      <img
-        src={ringSrc}
-        alt=""
-        className={`absolute inset-0 h-full w-full ${animated ? "animate-slow-spin" : ""}`}
-        draggable={false}
-      />
+      {/* Single unified spin: rotate the whole image */}
+      <img src={src} alt="Phambili Portal" className="phambili-portal__rotor" />
 
-      {/* subtle hover breathe halo */}
-      {animated && <div className="absolute inset-0 rounded-full hover:animate-breathe" />}
+      {showPlate && <div className="phambili-portal__plate" />}
 
-      {/* inner content plate */}
-      <div className="relative z-10 grid place-items-center rounded-full" style={{ width: "70%", height: "70%" }}>
-        <div className="absolute inset-0 rounded-full bg-white/25 backdrop-blur-[1px]" />
-        <div className="relative text-center">
+      {/* Center text (optional) */}
+      <div
+        className="pointer-events-none absolute inset-0 grid place-items-center"
+        aria-hidden="true"
+      >
+        <div className="text-center">
           <div className="text-[10px] tracking-[0.3em] uppercase text-emerald-800/70">Phambili</div>
           <div className="mt-1 text-lg font-semibold text-emerald-900">{label}</div>
         </div>
       </div>
-
-      {/* click ripples */}
-      {ripples.map(({ id, x, y }) => (
-        <span
-          key={id}
-          className="pointer-events-none absolute left-1/2 top-1/2 h-1/3 w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-500/35 animate-ripple"
-          style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
-        />
-      ))}
     </div>
   );
 
-  return href ? <Link href={href} aria-label={label}>{core}</Link> : core;
+  return href ? (
+    <Link href={href} aria-label={label}>
+      {core}
+    </Link>
+  ) : (
+    core
+  );
 }
+
+/* =========================================================
+   OPTIONAL (enable later): ringed SVG with alternate spin
+   ---------------------------------------------------------
+   1) Export a ringed SVG from Figma (groups named ring-1..N)
+   2) Add SVGR loader in next.config.js (if not already)
+   3) Replace the <img> above with this inline SVG import:
+
+   import PortalRinged from "@/public/brand/phambili-portal.ringed.svg";
+
+   <div className="phambili-portal__svg">
+     <PortalRinged />
+   </div>
+
+   4) After render, tag rings alternately (example):
+
+   useEffect(() => {
+     const svg = wrapRef.current?.querySelector("svg");
+     if (!svg) return;
+     const rings = Array.from(svg.querySelectorAll('g[id^="ring-"]'))
+       .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+     rings.forEach((g, i) => {
+       g.classList.remove("cw", "ccw");
+       g.classList.add(i % 2 === 0 ? "cw" : "ccw");
+       g.style.setProperty("--dur", `${24 + (i % 6) * 2}s`);
+     });
+   }, []);
+
+   5) Uncomment the "per-ring alternate spin" block in CSS.
+   ========================================================= */

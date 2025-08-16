@@ -1,0 +1,17 @@
+/* Common transform setup so each path rotates around the SVG viewBox center */
+.phambili-portal [data-ring] {
+  transform-box: view-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Spin helpers */
+@keyframes ring-cw  { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+@keyframes ring-ccw { from { transform: rotate(0deg) } to { transform: rotate(-360deg) } }
+.spin-cw  { animation: ring-cw  var(--dur, 28s) linear infinite; }
+.spin-ccw { animation: ring-ccw var(--dur, 28s) linear infinite; }
+
+/* Optional: hover demo to show isolation */
+.phambili-portal.isolatable:hover [data-ring] { opacity: .45; }
+.phambili-portal.isolatable:hover [data-ring].active { opacity: 1; }
+

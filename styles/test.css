@@ -1,0 +1,41 @@
+/* Applies to the injected root <svg> */
+.phambili-portal {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Clockwise */
+@keyframes spin360 {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Counter-clockwise */
+@keyframes spin360rev {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* We rotate wrapper <g> nodes we add around each path */
+.phambili-portal .spin,
+.phambili-portal .spin-rev {
+  /* Keep rotation centered on the SVG */
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* Default speed if not overridden inline */
+  animation-duration: 24s;
+}
+
+.phambili-portal .spin { animation-name: spin360; }
+.phambili-portal .spin-rev { animation-name: spin360rev; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .phambili-portal .spin,
+  .phambili-portal .spin-rev {
+    animation: none !important;
+  }
+}
