@@ -1,0 +1,239 @@
+/* styles/visualizer.css */
+/* Tailwind-compatible utility extras for the psychedelic visualizer */
+/* Reduced-motion variants that dial down transforms/animations */
+
+/* Custom slider styling */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.2);
+  height: 6px;
+  border-radius: 8px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.9);
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-track {
+  background: rgba(255, 255, 255, 0.2);
+  height: 6px;
+  border-radius: 8px;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  background: rgba(255, 255, 255, 0.9);
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+/* Disabled slider state */
+.slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.slider:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+}
+
+/* Glass morphism utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-panel-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Reduced motion variants */
+@media (prefers-reduced-motion: reduce) {
+  .slider::-webkit-slider-thumb {
+    transition: none;
+  }
+  
+  .slider::-moz-range-thumb {
+    transition: none;
+  }
+  
+  .slider::-webkit-slider-thumb:hover {
+    transform: none;
+  }
+  
+  .slider::-moz-range-thumb:hover {
+    transform: none;
+  }
+}
+
+/* Visualizer-specific animations */
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes soft-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes color-shift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* Reduced motion versions */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes gentle-pulse {
+    0%, 100% {
+      opacity: 0.9;
+    }
+  }
+  
+  @keyframes soft-float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+  }
+  
+  @keyframes color-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+    }
+  }
+}
+
+/* Animation classes */
+.animate-gentle-pulse {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+.animate-soft-float {
+  animation: soft-float 4s ease-in-out infinite;
+}
+
+.animate-color-shift {
+  animation: color-shift 10s linear infinite;
+}
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gentle-pulse {
+    animation: gentle-pulse 6s ease-in-out infinite;
+  }
+  
+  .animate-soft-float {
+    animation: soft-float 8s ease-in-out infinite;
+  }
+  
+  .animate-color-shift {
+    animation: color-shift 20s linear infinite;
+  }
+}
+
+/* Canvas overlay effects */
+.canvas-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+/* Performance indicator styling */
+.perf-indicator {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+/* Accessibility improvements */
+@media (prefers-contrast: high) {
+  .glass-panel,
+  .glass-panel-dark {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid white;
+  }
+  
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    background: white;
+    border: 2px solid black;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.slider:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+/* High contrast mode focus styles */
+@media (prefers-contrast: high) {
+  .slider:focus-visible,
+  button:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 3px;
+  }
+}

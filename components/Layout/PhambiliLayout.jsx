@@ -1,21 +1,27 @@
 // components/Layout/PhambiliLayout.jsx
-//PhambiliLayout = the canvas/background + content container.
-//Owns the full-screen gradient & radial mask backdrop.
-//Centers content with max-width container.
-//Does NOT render Nav or Footer logic (that’s PageShell’s job).
-//Think: “paint the wall and set the room dimensions.”
+// Single-owner layout: fixed Nav overlay + full-bleed stage for all pages.
 
-export default function PhambiliLayout({ children }) {
+import React from "react";
+import Nav from "@/components/Nav/Nav";
+
+export default function PhambiliLayout({ children, className = "" }) {
   return (
-    <div className="min-h-screen w-full text-emerald-950 dark:text-emerald-50">
-      {/* Background gradient + mask */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50 via-sky-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-black" />
-        <div className="absolute inset-0 pointer-events-none [mask:radial-gradient(80%_60%_at_50%_20%,#000_60%,transparent)]" />
-      </div>
+    <div className={`w-screen h-screen overflow-hidden ${className}`}>
+      {/* Fixed nav overlay (doesn't consume layout height) */}
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <Nav />
+      </header>
 
-      {/* Page content */}
-      <div className="mx-auto w-full max-w-[1200px] px-6">
+      {/* Full-bleed stage directly under the nav */}
+      <div
+        className="relative w-screen h-[100svh]"
+        style={{
+          // Global, zoom-safe variables used by pages/components:
+          ["--portal-size"]: "clamp(140px, 18vmin, 260px)",
+          ["--orbit-radius"]:
+            "clamp(calc(var(--portal-size)*0.9), 36vmin, calc(min(50svmin,50vmin) - calc(var(--portal-size)/2) - 12px))",
+        }}
+      >
         {children}
       </div>
     </div>

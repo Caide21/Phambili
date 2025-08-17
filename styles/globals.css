@@ -1,1 +1,24 @@
 @tailwind base;@tailwind components;@tailwind utilities;body{background:#0b0f14;color:#e6f0ff}
+
+/* Ensure the app fills the viewport and doesn't add stray margins/scrollbars */
+html, body, #__next { height: 100%; }
+body { margin: 0; overflow: hidden; }
+
+/* Global stage variables: single source of truth used by all pages/components */
+:root{
+  --portal-size: clamp(140px, 18vmin, 260px);
+  /* radius always inside viewport even when zooming (vmin follows browser zoom) */
+  --orbit-radius: clamp(calc(var(--portal-size)*0.9),
+                        36vmin,
+                        calc(50vmin - calc(var(--portal-size)/2) - 12px));
+}
+
+/* Full-bleed fixed stage like ChatGPT’s canvas */
+.stage {
+  position: fixed;          /* locks to viewport like ChatGPT */
+  inset: 0;                 /* full screen */
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;        /* never clip portal edges */
+}
+
