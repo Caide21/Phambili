@@ -1,130 +1,255 @@
 // components/Clusters/PortalCluster.jsx
-// Radial layout engine for Phambili portals.
-// Positions N children around a center (reactor) with responsive spacing.
-// Preserves SSR/CSR parity: pure math, no layout effect needed.
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import PhambiliPortal from "@/components/Cards/PhambiliPortal"; // visual-only (no <a>)
 
-import React from "react";
+const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+const DRAG_THRESHOLD_PX = 5;
 
-/**
- * PortalCluster
- *
- * Props:
- * - count: number of orbiting items (defaults to children.length if provided)
- * - children: render function or React nodes. If a function, it is called with {index, angleDeg}
- * - offsetDeg: rotation offset for the ring (default -90 so the first sits at the top)
- * - ringRadiusPct: fraction of the shortest side used for the ring radius (0.0–0.5). Default 0.36
- * - itemPct: size of each portal relative to the shortest side (0.0–1.0). Default 0.18
- * - minItemPx / maxItemPx: clamp portal size for extremes
- * - paddingPx: extra breathing room between portal edge and viewport edge
- * - showCenter: if true, render a center layer (useful for the reactor)
- * - center: optional React node for the center (reactor). If omitted and showCenter=true, nothing is rendered.
- * - className / style: forwarded to the container
- *
- * Usage:
- * <PortalCluster
- *    count={5}
- *    center={<ReactorPlaceholder />}
- * >
- *   {(p) => <PhambiliPortal key={p.index} />}
- * </PortalCluster>
- */
+const makeRing = ({ count, radius, size, startAngle = -90, hrefPrefix = "/#", labelPrefix = "Portal" }) => {
+  const step = 360 / count;
+  return Array.from({ length: count }).map((_, i) => ({
+    id: `${labelPrefix.toLowerCase()}-${i + 1}`,
+    label: `${labelPrefix} ${i + 1}`,
+    href: `${hrefPrefix}/${i + 1}`,
+    angleDeg: startAngle + i * step,
+    radius,
+    size,
+  }));
+};
+const makePolygon = (args) => makeRing(args);
+
 export default function PortalCluster({
+  id = "cluster-1",
+
+  // Placement
+  top = "50%",
+  left = "50%",
+  initial = { x: 0, y: 0, scale: 1 },
+
+  // Layout
   count,
-  children,
-  offsetDeg = -90,
-  ringRadiusPct = 0.36,
-  itemPct = 0.18,
-  minItemPx = 140,
-  maxItemPx = 260,
-  paddingPx = 24,
-  showCenter = true,
-  center = null,
+  ringConfig,
+  portals,
+  defaultRadius = 160,
+  defaultSize = 140,
+  autoLayout = true,
+  layoutStartAngle = -90,
+
+  // Behavior
+  draggable = true,
+  scalable = true,
+  blendMode = "screen",
+
+  // Linking (cluster owns the link)
+  wrapWithAnchor = true,
+  LinkComponent, // e.g. PortalLink; fallback is native <a>
+
+  // Controlled state (for GUI)
+  scale,
+  onScaleChange,
+  position,
+  onPositionChange,
+  showBuiltInScale = false,
+
+  // Legacy center handle (off)
+  showReactor = false,
+  reactor = { size: 72, label: "Reactor" },
+
+  onChange,
   className = "",
-  style = {},
 }) {
-  // We size relative to viewport so the formation always fits without zooming.
-  // Container is full-bleed and uses the shortest side to keep things square.
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-  const vh = typeof window !== "undefined" ? window.innerHeight : 720;
-  const shortest = Math.min(vw, vh);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  // Portal size scales with screen but is clamped for sanity.
-  const itemSize = clamp(shortest * itemPct, minItemPx, maxItemPx);
+  const rootRef = useRef(null);
+  const dragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, baseX: 0, baseY: 0 });
 
-  // The radius must account for portal radius and padding so edges never clip.
-  // Effective max ring radius inside the viewport:
-  const maxRingInside = (shortest / 2) - (itemSize / 2) - paddingPx;
+  // Uncontrolled fallbacks
+  const [posState, setPosState] = useState({ x: initial.x || 0, y: initial.y || 0 });
+  const [scaleState, setScaleState] = useState(initial.scale || 1);
 
-  // Requested ring radius from pct:
-  const requested = shortest * ringRadiusPct;
+  const pos = position ?? posState;
+  const scaleVal = typeof scale === "number" ? scale : scaleState;
 
-  const R = clamp(requested, itemSize * 0.9, maxRingInside);
+  const setPos = (next) => (position && onPositionChange ? onPositionChange(next) : setPosState(next));
+  const setScaleVal = (next) => (typeof scale === "number" && onScaleChange ? onScaleChange(next) : setScaleState(next));
 
-  // If no count provided, try from children length (when children is an array).
-  const n = typeof count === "number"
-    ? count
-    : React.Children.count(children);
+  // Dev guard against nested anchors
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production") {
+      const nested = rootRef.current?.querySelector("a a");
+      if (nested) console.error("[PortalCluster] Nested <a> detected. Ensure PhambiliPortal has NO <a> inside.");
+    }
+  }, []);
 
-  const items = Array.from({ length: n }, (_, i) => {
-    const step = 360 / n;
-    const angleDeg = offsetDeg + i * step;
-    const rad = (angleDeg * Math.PI) / 180;
-    // Origin is center of container; we place items with translate(-50%,-50%)
-    const x = 50 + (Math.cos(rad) * R * 100) / shortest; // as %
-    const y = 50 + (Math.sin(rad) * R * 100) / shortest; // as %
-    return { i, angleDeg, x, y };
-  });
+  // --- Drag from background or any portal ---
+  const beginDrag = (e) => {
+    if (!draggable || !mounted) return;
+    rootRef.current?.setPointerCapture?.(e.pointerId);
+    dragRef.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: pos.x,
+      baseY: pos.y,
+    };
+  };
+  const onPointerDownRoot = (e) => {
+    if (e.target.closest("[data-cluster-hud]")) return;
+    beginDrag(e);
+  };
+  const onPointerDownPortal = (e) => beginDrag(e);
+  const onPointerMove = (e) => {
+    const d = dragRef.current;
+    if (!d.active) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.moved && (Math.abs(dx) > DRAG_THRESHOLD_PX || Math.abs(dy) > DRAG_THRESHOLD_PX)) d.moved = true;
+    const next = { x: d.baseX + dx, y: d.baseY + dy };
+    setPos(next);
+    onChange?.({ id, ...next, scale: scaleVal });
+  };
+  const endDrag = (e) => {
+    dragRef.current.active = false;
+    rootRef.current?.releasePointerCapture?.(e.pointerId);
+    setTimeout(() => (dragRef.current.moved = false), 0);
+  };
 
-  // Render children: support render-prop or node list
-  const renderChild = (p) => {
-    if (typeof children === "function") return children({ index: p.i, angleDeg: p.angleDeg });
-    const arr = React.Children.toArray(children);
-    return arr[p.i % arr.length] ?? null;
+  // Wheel scaling
+  const onWheel = (e) => {
+    if (!scalable || e.ctrlKey) return;
+    const dir = e.deltaY > 0 ? -1 : 1;
+    const next = clamp(Number((scaleVal + dir * 0.08).toFixed(3)), 0.5, 2.0);
+    setScaleVal(next);
+    onChange?.({ id, x: pos.x, y: pos.y, scale: next });
+  };
+  const bumpScale = (step) => () => {
+    const next = clamp(Number((scaleVal + step).toFixed(3)), 0.5, 2.0);
+    setScaleVal(next);
+    onChange?.({ id, x: pos.x, y: pos.y, scale: next });
+  };
+
+  // --- Nodes (auto-fill layout when missing) ---
+  const nodes = useMemo(() => {
+    let base = [];
+    if (Array.isArray(portals) && portals.length) {
+      const n = portals.length;
+      const step = 360 / Math.max(n, 1);
+      base = portals.map((p, i) => {
+        const angleDeg = autoLayout && p.angleDeg == null ? layoutStartAngle + i * step : p.angleDeg ?? layoutStartAngle;
+        const radius = autoLayout && p.radius == null ? defaultRadius : p.radius ?? defaultRadius;
+        const size = p.size ?? defaultSize;
+        return { ...p, angleDeg, radius, size };
+      });
+    } else if (Array.isArray(ringConfig) && ringConfig.length) {
+      base = ringConfig.flatMap((r, idx) => makeRing({ ...r, labelPrefix: `Ring${idx + 1}` }));
+    } else if (typeof count === "number" && count > 0) {
+      base = makePolygon({ count, radius: defaultRadius, size: defaultSize, startAngle: layoutStartAngle, labelPrefix: "Portal" });
+    } else {
+      base = makePolygon({ count: 5, radius: defaultRadius, size: defaultSize, startAngle: layoutStartAngle, labelPrefix: "Portal" });
+    }
+
+    return base.map((p) => {
+      const rad = ((p.angleDeg ?? layoutStartAngle) * Math.PI) / 180;
+      const r = (p.radius ?? defaultRadius) * scaleVal;
+      const x = Math.cos(rad) * r;
+      const y = Math.sin(rad) * r;
+      const size = (p.size ?? defaultSize) * scaleVal;
+      return { ...p, x, y, size };
+    });
+  }, [portals, ringConfig, count, defaultRadius, defaultSize, autoLayout, layoutStartAngle, scaleVal]);
+
+  // Prevent navigation when user actually dragged
+  const onPortalClickCapture = (e) => {
+    if (dragRef.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   };
 
   return (
     <div
-      className={`relative w-full h-[calc(100vh-72px)] max-h-[100vh] overflow-hidden ${className}`}
-      // NOTE: the 72px assumes a slim top nav; adjust if your nav height differs.
-      style={style}
-      aria-label="Portal Cluster"
+      id={id}
+      ref={rootRef}
+      className={`pointer-events-auto select-none absolute ${className}`}
+      style={{ top, left, transform: `translate(-50%, -50%) translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+      onPointerDown={onPointerDownRoot}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onWheel={onWheel}
     >
-      {/* Center (reactor) */}
-      {showCenter && (
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none",
-          }}
-        >
-          {center}
+      <div
+        className="relative"
+        style={{ mixBlendMode: blendMode, filter: "drop-shadow(0 0 12px rgba(0,255,140,0.25))" }}
+      >
+        {nodes.map((p) => {
+          const wrapperStyle = {
+            left: `calc(50% + ${p.x}px - ${p.size / 2}px)`,
+            top: `calc(50% + ${p.y}px - ${p.size / 2}px)`,
+            width: p.size,
+            height: p.size,
+          };
+
+          // IMPORTANT: position is applied to a wrapper DIV,
+          // so even if LinkComponent ignores style/className, layout still works.
+          return (
+            <div
+              key={p.id}
+              className="absolute block"
+              style={wrapperStyle}
+              onPointerDown={onPointerDownPortal}
+              onClickCapture={onPortalClickCapture}
+              role="group"
+            >
+              {wrapWithAnchor ? (
+                (() => {
+                  const Link = LinkComponent || "a";
+                  return (
+                    <Link href={p.href || "#"} aria-label={p.label || p.id} className="block">
+                      <PhambiliPortal size={p.size} />
+                    </Link>
+                  );
+                })()
+              ) : (
+                <PhambiliPortal size={p.size} />
+              )}
+            </div>
+          );
+        })}
+
+        {showReactor && (
+          <button
+            type="button"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-emerald-400/50 bg-emerald-400/10 backdrop-blur-sm px-4 py-2 text-emerald-200"
+            style={{ width: reactor.size, height: reactor.size }}
+            aria-label={reactor.label || "Reactor"}
+          >
+            <span className="text-xs font-medium tracking-wide">{reactor.label || "Reactor"}</span>
+          </button>
+        )}
+      </div>
+
+      {showBuiltInScale && scalable && (
+        <div className="absolute -right-14 top-1/2 -translate-y-1/2 flex flex-col gap-2" data-cluster-hud>
+          <button
+            type="button"
+            onClick={bumpScale(+0.08)}
+            className="rounded-xl border border-white/20 bg-white/10 px-3 py-1 text-sm text-white hover:bg-white/20"
+          >
+            +
+          </button>
+          <div className="text-center text-xs text-white/70">{(scaleVal * 100).toFixed(0)}%</div>
+          <button
+            type="button"
+            onClick={bumpScale(-0.08)}
+            className="rounded-xl border border-white/20 bg-white/10 px-3 py-1 text-sm text-white hover:bg-white/20"
+          >
+            −
+          </button>
         </div>
       )}
-
-      {/* Orbiting portals */}
-      {items.map((p) => (
-        <div
-          key={p.i}
-          style={{
-            position: "absolute",
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: `${(itemSize / shortest) * 100}%`,
-            // Keep each portal square; height matches width through aspect-ratio.
-            aspectRatio: "1 / 1",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          {renderChild(p)}
-        </div>
-      ))}
     </div>
   );
-}
-
-function clamp(v, lo, hi) {
-  return Math.max(lo, Math.min(hi, v));
 }

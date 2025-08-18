@@ -1,88 +1,64 @@
-import Link from "next/link";
+// components/Cards/PhambiliPortal.jsx
+import React from "react";
 
 /**
- * PhambiliPortal
- * Default: single, unified spin using an <img src="/brand/Phambili_Portal.svg">
- *
- * Later (optional): switch to a ringed SVG via SVGR and enable the
- * commented "alternate spin" block in the CSS.
+ * PhambiliPortal (visual-only)
+ * - No <a> inside (cluster owns the link wrapper)
+ * - You can swap `src` to your exact asset; defaults to /brand/Phambili_Portal.svg
  */
 export default function PhambiliPortal({
-  href = "/contact-sales",
   label = "Enter Portal",
-  size = 380,                  // px or any CSS size string
+  size = 220,                 // px
   src = "/brand/Phambili_Portal.svg",
   className = "",
   showPlate = true,
 }) {
-  const resolved = typeof size === "number" ? `${size}px` : size;
-
-  const core = (
+  return (
     <div
-      className={[
-        "phambili-portal select-none",
-        "transition-[filter,transform] duration-500 hover:brightness-[1.04] hover:drop-shadow-lg",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60",
-        className,
-      ].join(" ")}
-      style={{ width: resolved, height: resolved }}
+      className={`relative select-none ${className}`}
+      style={{ width: size, height: size }}
       role="img"
-      aria-label="Phambili Portal"
-      tabIndex={0}
+      aria-label={label}
     >
-      {/* Single unified spin: rotate the whole image */}
-      <img src={src} alt="Phambili Portal" className="phambili-portal__rotor" />
-
-      {showPlate && <div className="phambili-portal__plate" />}
-
-      {/* Center text (optional) */}
-      <div
-        className="pointer-events-none absolute inset-0 grid place-items-center"
+      {/* Rotating ring art */}
+      <img
+        src={src}
+        alt=""
         aria-hidden="true"
-      >
-        <div className="text-center">
-          <div className="text-[10px] tracking-[0.3em] uppercase text-emerald-800/70">Phambili</div>
-          <div className="mt-1 text-lg font-semibold text-emerald-900">{label}</div>
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          filter: "drop-shadow(0 0 10px rgba(39, 255, 171, 0.25))",
+          animation: "phambili-portal-spin 22s linear infinite",
+        }}
+      />
+
+      {/* Inner plate */}
+      {showPlate && (
+        <div
+          className="absolute inset-0 grid place-items-center"
+          aria-hidden="true"
+        >
+          <div className="rounded-full px-3 py-2 text-center"
+               style={{
+                 background: "rgba(10, 40, 32, 0.55)",
+                 boxShadow: "inset 0 0 0 1px rgba(56,255,172,0.20)",
+                 backdropFilter: "blur(2px)",
+               }}>
+            <div className="text-[10px] tracking-[0.25em] text-emerald-300/70 mb-0.5">PHAMBILI</div>
+            <div className="text-sm text-emerald-100/90 font-medium">{label}</div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Local keyframes */}
+      <style jsx>{`
+        @keyframes phambili-portal-spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
-
-  return href ? (
-    <Link href={href} aria-label={label}>
-      {core}
-    </Link>
-  ) : (
-    core
-  );
 }
-
-/* =========================================================
-   OPTIONAL (enable later): ringed SVG with alternate spin
-   ---------------------------------------------------------
-   1) Export a ringed SVG from Figma (groups named ring-1..N)
-   2) Add SVGR loader in next.config.js (if not already)
-   3) Replace the <img> above with this inline SVG import:
-
-   import PortalRinged from "@/public/brand/phambili-portal.ringed.svg";
-
-   <div className="phambili-portal__svg">
-     <PortalRinged />
-   </div>
-
-   4) After render, tag rings alternately (example):
-
-   useEffect(() => {
-     const svg = wrapRef.current?.querySelector("svg");
-     if (!svg) return;
-     const rings = Array.from(svg.querySelectorAll('g[id^="ring-"]'))
-       .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-     rings.forEach((g, i) => {
-       g.classList.remove("cw", "ccw");
-       g.classList.add(i % 2 === 0 ? "cw" : "ccw");
-       g.style.setProperty("--dur", `${24 + (i % 6) * 2}s`);
-     });
-   }, []);
-
-   5) Uncomment the "per-ring alternate spin" block in CSS.
-   ========================================================= */

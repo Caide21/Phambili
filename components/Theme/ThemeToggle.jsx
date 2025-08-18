@@ -25,7 +25,7 @@ export default function ThemeToggle({ size = "sm", className = "" }) {
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
       <span className="mr-1.5" aria-hidden>
-        {theme === "dark"}
+        {theme === "dark" ? "☀️" : "🌙"}
       </span>
       {theme === "dark" ? "Light" : "Dark"}
     </button>

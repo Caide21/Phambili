@@ -1,4 +1,13 @@
-@tailwind base;@tailwind components;@tailwind utilities;body{background:#0b0f14;color:#e6f0ff}
+ @tailwind base;
+ @tailwind components;
+ @tailwind utilities;
+
+ /* Make light/dark come from the html.dark class (Tailwind darkMode:'class') */
+ @layer base {
+   body { @apply bg-white text-emerald-900; }
+   .dark body { @apply bg-[#0b0f14] text-[#e6f0ff]; }
+  }
+
 
 /* Ensure the app fills the viewport and doesn't add stray margins/scrollbars */
 html, body, #__next { height: 100%; }
