@@ -1,21 +1,36 @@
-// components/Transitions/PortalLink.jsx
-//PortalLink = wraps any element; on click, plays the portal transition then navigates.
-//Usage: <PortalLink href="/technology"><PhambiliPortal .../></PortalLink>
+import React, { useContext } from "react";
+import { useRouter } from "next/router";
+import { PortalTransitionContext } from "./PortalTransitionProvider";
 
-import React from "react";
-import { usePortalTransition } from "./PortalTransitionProvider";
+/**
+ * On click:
+ *  - prevents default (unless modified-click)
+ *  - calls start(href) which animates + pushes after a small delay
+ */
+export default function PortalLink({ href, children, className = "", ...rest }) {
+  const router = useRouter(); // optional: used to compute current path for href fallback
+  const { start } = useContext(PortalTransitionContext);
 
-export default function PortalLink({ href, children, className = "", duration = 900 }) {
-  const { start } = usePortalTransition();
+  const onClick = (e) => {
+    if (
+      e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ||
+      (rest.target && rest.target !== "_self")
+    ) {
+      // Let the browser handle new tab / etc.
+      return;
+    }
+    e.preventDefault();
+    start(href);
+  };
 
   return (
-    <button
-      type="button"
-      onClick={() => start(href, { duration })}
-      className={["group", "cursor-pointer", "outline-none", className].join(" ")}
-      aria-label="Enter portal"
+    <a
+      href={typeof href === "string" ? href : router.asPath}
+      onClick={onClick}
+      className={className}
+      {...rest}
     >
       {children}
-    </button>
+    </a>
   );
 }

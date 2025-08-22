@@ -1,7 +1,6 @@
 // components/Layout/Nav.jsx
 import Link from "next/link";
 import { useRouter } from "next/router";
-import ThemeToggle from "@/components/Theme/ThemeToggle";
 
 const navItems = [
   { href: "/technology", label: "Technology" },
@@ -20,15 +19,15 @@ export default function Nav({ brand = "Phambili", className = "" }) {
           {/* Brand */}
           <Link
             href="/"
-            className="font-medium tracking-wide text-emerald-900 hover:text-emerald-700 transition-colors dark:text-emerald-100 dark:hover:text-emerald-50"
+            className="font-medium tracking-wide text-emerald-800 hover:text-emerald-900 transition-colors dark:text-emerald-100 dark:hover:text-white"
             aria-label={`${brand} home`}
           >
             {brand}
           </Link>
 
-          {/* Right cluster: nav links + theme toggle */}
+          {/* Right cluster: nav links */}
           <div className="flex items-center gap-3">
-            <nav className="hidden sm:flex items-center gap-2 text-xs sm:text-sm text-emerald-800/80 dark:text-emerald-200/80">
+            <nav className="hidden sm:flex items-center gap-2 text-xs sm:text-sm text-emerald-700 dark:text-emerald-100">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -38,8 +37,8 @@ export default function Nav({ brand = "Phambili", className = "" }) {
                     className={[
                       "px-2 py-1 rounded-md transition-colors",
                       isActive
-                        ? "text-emerald-900 bg-emerald-100/70 dark:text-emerald-950 dark:bg-emerald-200/80"
-                        : "hover:text-emerald-900 hover:bg-emerald-100/40 dark:hover:text-emerald-100 dark:hover:bg-emerald-900/30",
+                        ? "text-emerald-950 bg-emerald-100/80 dark:text-emerald-950 dark:bg-emerald-200/90"
+                        : "hover:text-emerald-900 hover:bg-emerald-100/40 dark:hover:text-white dark:hover:bg-emerald-900/30",
                     ].join(" ")}
                     aria-current={isActive ? "page" : undefined}
                   >
@@ -48,9 +47,6 @@ export default function Nav({ brand = "Phambili", className = "" }) {
                 );
               })}
             </nav>
-
-            {/* Drop-in reusable toggle */}
-            <ThemeToggle size="sm" />
           </div>
         </div>
       </div>

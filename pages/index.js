@@ -1,54 +1,61 @@
 // pages/index.js
 import React from "react";
-import { ThemeProvider } from "@/components/Theme/ThemeProvider";
-import FullBleedStage from "@/components/Layout/FullBleedStage";
 import PortalCluster from "@/components/Clusters/PortalCluster";
-
-// Keep the transition effect; remove these two lines if you’re not using it.
-import { PortalTransitionProvider } from "@/components/Transitions/PortalTransitionProvider";
 import PortalLink from "@/components/Transitions/PortalLink";
+import PhambiliPortal from "@/components/Cards/PhambiliPortal";     
+import { useEndPortalTransitionOnMount } from "@/components/Transitions";
 
 export default function Home() {
-  // Minimal items — cluster auto-forms a polygon and centers on the page.
+  // Kill any in-flight overlay as soon as Home mounts
+  useEndPortalTransitionOnMount(0, true);
   const portals = [
-    { id: "p1", label: "Portal 1", href: "/sandbox" },
-    { id: "p2", label: "Portal 2", href: "/sandbox" },
-    { id: "p3", label: "Portal 3", href: "/sandbox" },
-    { id: "p4", label: "Portal 4", href: "/sandbox" },
-    { id: "p5", label: "Portal 5", href: "/sandbox" },
+    {
+      id: "investor",
+      label: "Investor",
+      href: "/routes/investor",
+      component: <PhambiliPortal label="Investor" />,
+    },
+    {
+      id: "partner",
+      label: "Partner",
+      href: "/routes/partner",
+      component: <PhambiliPortal label="Partner" />,
+    },
+    {
+      id: "buyer",
+      label: "Product Buyer",
+      href: "/routes/buyer",
+      component: <PhambiliPortal label="Product Buyer" />,
+    },
+    {
+      id: "supplier",
+      label: "Feedstock Supplier",
+      href: "/routes/supplier",
+      component: <PhambiliPortal label="Feedstock Supplier" />,
+    },
   ];
 
+  
   return (
-    <ThemeProvider>
-      <PortalTransitionProvider>
-        <FullBleedStage className="bg-gradient-to-bl from-[#041F1A] via-[#062821] to-[#04140F] overflow-hidden">
-          {/* Subtle radial glow */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(60% 60% at 60% 40%, rgba(16,175,110,0.20) 0%, rgba(0,0,0,0) 60%)",
-            }}
-          />
-
-          {/* Centered cluster; ensure PortalCluster's outer wrapper uses translate(-50%,-50%) */}
-          <PortalCluster
-            id="cluster-home"
-            top="50%"
-            left="50%"
-            initial={{ x: 0, y: 0, scale: 1 }}
-            portals={portals}
-            draggable={false}
-            scalable={true}
-            wrapWithAnchor
-            LinkComponent={PortalLink}
-            blendMode="screen"
-            showBuiltInScale={false}
-            showReactor={false}
-          />
-        </FullBleedStage>
-      </PortalTransitionProvider>
-    </ThemeProvider>
+    <div className="flex items-center justify-center min-h-[70vh]">
+      <PortalCluster
+        portals={portals}
+        wrapWithAnchor
+        LinkComponent={PortalLink}
+        draggable={false}
+        scalable
+        blendMode="screen"
+        showReactor={false}
+      />
+    </div>
   );
 }
+
+// Keep PageShell header/footer
+Home.shell = {
+  kicker: "WELCOME TO PHAMBILI",
+  title: "Choose Your Route",
+  subtitle: "Select the journey that best matches your role.",
+  showNav: true,
+  showFooter: true,
+};

@@ -20,13 +20,9 @@ const makePolygon = (args) => makeRing(args);
 
 export default function PortalCluster({
   id = "cluster-1",
-
-  // Placement
   top = "50%",
   left = "50%",
   initial = { x: 0, y: 0, scale: 1 },
-
-  // Layout
   count,
   ringConfig,
   portals,
@@ -34,27 +30,18 @@ export default function PortalCluster({
   defaultSize = 140,
   autoLayout = true,
   layoutStartAngle = -90,
-
-  // Behavior
   draggable = true,
   scalable = true,
   blendMode = "screen",
-
-  // Linking (cluster owns the link)
   wrapWithAnchor = true,
-  LinkComponent, // e.g. PortalLink; fallback is native <a>
-
-  // Controlled state (for GUI)
+  LinkComponent, // e.g. PortalLink
   scale,
   onScaleChange,
   position,
   onPositionChange,
   showBuiltInScale = false,
-
-  // Legacy center handle (off)
   showReactor = false,
   reactor = { size: 72, label: "Reactor" },
-
   onChange,
   className = "",
 }) {
@@ -64,7 +51,6 @@ export default function PortalCluster({
   const rootRef = useRef(null);
   const dragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, baseX: 0, baseY: 0 });
 
-  // Uncontrolled fallbacks
   const [posState, setPosState] = useState({ x: initial.x || 0, y: initial.y || 0 });
   const [scaleState, setScaleState] = useState(initial.scale || 1);
 
@@ -74,7 +60,6 @@ export default function PortalCluster({
   const setPos = (next) => (position && onPositionChange ? onPositionChange(next) : setPosState(next));
   const setScaleVal = (next) => (typeof scale === "number" && onScaleChange ? onScaleChange(next) : setScaleState(next));
 
-  // Dev guard against nested anchors
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
       const nested = rootRef.current?.querySelector("a a");
@@ -82,7 +67,6 @@ export default function PortalCluster({
     }
   }, []);
 
-  // --- Drag from background or any portal ---
   const beginDrag = (e) => {
     if (!draggable || !mounted) return;
     rootRef.current?.setPointerCapture?.(e.pointerId);
@@ -116,7 +100,6 @@ export default function PortalCluster({
     setTimeout(() => (dragRef.current.moved = false), 0);
   };
 
-  // Wheel scaling
   const onWheel = (e) => {
     if (!scalable || e.ctrlKey) return;
     const dir = e.deltaY > 0 ? -1 : 1;
@@ -130,7 +113,6 @@ export default function PortalCluster({
     onChange?.({ id, x: pos.x, y: pos.y, scale: next });
   };
 
-  // --- Nodes (auto-fill layout when missing) ---
   const nodes = useMemo(() => {
     let base = [];
     if (Array.isArray(portals) && portals.length) {
@@ -160,7 +142,6 @@ export default function PortalCluster({
     });
   }, [portals, ringConfig, count, defaultRadius, defaultSize, autoLayout, layoutStartAngle, scaleVal]);
 
-  // Prevent navigation when user actually dragged
   const onPortalClickCapture = (e) => {
     if (dragRef.current.moved) {
       e.preventDefault();
@@ -192,8 +173,6 @@ export default function PortalCluster({
             height: p.size,
           };
 
-          // IMPORTANT: position is applied to a wrapper DIV,
-          // so even if LinkComponent ignores style/className, layout still works.
           return (
             <div
               key={p.id}
@@ -208,12 +187,12 @@ export default function PortalCluster({
                   const Link = LinkComponent || "a";
                   return (
                     <Link href={p.href || "#"} aria-label={p.label || p.id} className="block">
-                      <PhambiliPortal size={p.size} />
+                      <PhambiliPortal label={p.label} size={p.size} />
                     </Link>
                   );
                 })()
               ) : (
-                <PhambiliPortal size={p.size} />
+                <PhambiliPortal label={p.label} size={p.size} />
               )}
             </div>
           );

@@ -1,33 +1,161 @@
- @tailwind base;
- @tailwind components;
- @tailwind utilities;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
- /* Make light/dark come from the html.dark class (Tailwind darkMode:'class') */
- @layer base {
-   body { @apply bg-white text-emerald-900; }
-   .dark body { @apply bg-[#0b0f14] text-[#e6f0ff]; }
+/* -------------------------------------------------------
+   Base: permanent emerald aura
+   ------------------------------------------------------- */
+@layer base {
+  body {
+    /* Text color tuned for emerald bg */
+    @apply text-[#e6f0ff];
+
+    /* Emerald gradient background */
+    background: radial-gradient(
+      1200px 800px at 50% -200px,
+      #0f1b14 0%,
+      #0b0f14 60%,
+      #070a0d 100%
+    ) !important;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+
+    margin: 0;
+    /* ✅ allow vertical scrolling */
+    overflow-x: hidden;
   }
-
-
-/* Ensure the app fills the viewport and doesn't add stray margins/scrollbars */
-html, body, #__next { height: 100%; }
-body { margin: 0; overflow: hidden; }
-
-/* Global stage variables: single source of truth used by all pages/components */
-:root{
-  --portal-size: clamp(140px, 18vmin, 260px);
-  /* radius always inside viewport even when zooming (vmin follows browser zoom) */
-  --orbit-radius: clamp(calc(var(--portal-size)*0.9),
-                        36vmin,
-                        calc(50vmin - calc(var(--portal-size)/2) - 12px));
 }
 
-/* Full-bleed fixed stage like ChatGPT’s canvas */
+/* Ensure app fills viewport without locking scroll */
+html, body, #__next { 
+  min-height: 100%;
+}
+
+/* -------------------------------------------------------
+   Stage + portal visuals (merged from home.css)
+   ------------------------------------------------------- */
+
+/* Stage (centered square area that holds reactor + portals) */
+.orbit-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  background: transparent;
+  --orbit-radius: clamp(140px, 28vw, 360px);
+}
+
+/* Center reactor placeholder */
+.reactor {
+  position: relative;
+  width: clamp(160px, 18vw, 280px);
+  height: clamp(160px, 18vw, 280px);
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(255,255,255,0.2),
+    rgba(0,0,0,0.25)
+  );
+  box-shadow:
+    0 0 40px rgba(0, 255, 200, 0.25),
+    inset 0 0 50px rgba(0, 255, 200, 0.15);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(2px);
+}
+
+.reactor-core {
+  position: absolute;
+  inset: 20%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(0,255,180,0.75),
+    rgba(0,120,120,0.4),
+    transparent 70%
+  );
+  animation: pulse 2.6s ease-in-out infinite;
+  filter: blur(0.3px);
+}
+
+.reactor-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 255, 200, 0.25);
+  mix-blend-mode: screen;
+  animation: spin var(--spin, 24s) linear infinite;
+}
+.reactor-ring.ring-1 { --spin: 26s; border-color: rgba(0,255,200,0.18); }
+.reactor-ring.ring-2 { --spin: -32s; border-color: rgba(0,255,200,0.12); inset: 8%; }
+.reactor-ring.ring-3 { --spin: 40s; border-color: rgba(0,255,200,0.10); inset: 16%; }
+
+.reactor-label {
+  position: absolute;
+  bottom: -1.75rem;
+  width: max-content;
+  color: rgba(255,255,255,0.9);
+  font-size: clamp(12px, 1.1vw, 14px);
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+/* Portal placement */
+.portal-node {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  width: clamp(140px, 16vw, 220px);
+  height: clamp(140px, 16vw, 220px);
+}
+
+.portal-inner {
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { transform: scale(0.96); opacity: 0.9; }
+  50%      { transform: scale(1.04); opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* -------------------------------------------------------
+   Global stage vars
+   ------------------------------------------------------- */
+:root {
+  --portal-size: clamp(140px, 18vmin, 260px);
+  --orbit-radius: clamp(
+    calc(var(--portal-size)*0.9),
+    36vmin,
+    calc(50vmin - calc(var(--portal-size)/2) - 12px)
+  );
+}
+
+/* Full-bleed fixed stage */
 .stage {
-  position: fixed;          /* locks to viewport like ChatGPT */
-  inset: 0;                 /* full screen */
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
-  overflow: visible;        /* never clip portal edges */
+  overflow: visible;
+  pointer-events: none; /* ✅ don’t block scrolling/clicks */
+  z-index: -1;          /* ✅ sit behind content */
 }
 
+/* Emergency: ensure no full-screen overlay blocks routes */
+[data-portal-overlay],
+#portal-overlay,
+.portal-overlay,
+#route-transition,
+.fullscreen-overlay {
+  pointer-events: none !important;
+  opacity: 0 !important;
+  z-index: -1 !important;
+}
