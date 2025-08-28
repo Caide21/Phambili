@@ -95,9 +95,11 @@ export default function AudienceRoutePage({ audience, meta, steps }) {
 
 // --- Next.js data hooks (static generation) ---
 export async function getStaticPaths() {
-  const paths = AUDIENCE_SLUGS.map((audience) => ({ params: { audience } }));
+  const unique = Array.from(new Set(AUDIENCE_SLUGS));
+  const paths = unique.map((audience) => ({ params: { audience } }));
   return { paths, fallback: false };
 }
+
 
 export async function getStaticProps({ params }) {
   const audience = params.audience;
