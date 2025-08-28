@@ -150,12 +150,12 @@ html, body, #__next {
 }
 
 /* Emergency: ensure no full-screen overlay blocks routes */
-[data-portal-overlay],
+/* REMOVED: This was blocking the portal transition overlay */
+/* [data-portal-overlay],
 #portal-overlay,
 .portal-overlay,
 #route-transition,
 .fullscreen-overlay {
   pointer-events: none !important;
   opacity: 0 !important;
-  z-index: -1 !important;
-}
+} */

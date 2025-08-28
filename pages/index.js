@@ -1,57 +1,44 @@
 // pages/index.js
 import React from "react";
 import PortalCluster from "@/components/Clusters/PortalCluster";
-import PortalLink from "@/components/Transitions/PortalLink";
-import PhambiliPortal from "@/components/Cards/PhambiliPortal";     
-import { useEndPortalTransitionOnMount } from "@/components/Transitions";
+import { PortalLink } from "@/components/Transitions"; // ✅ keep this one
 
 export default function Home() {
-  // Kill any in-flight overlay as soon as Home mounts
-  useEndPortalTransitionOnMount(0, true);
   const portals = [
-    {
-      id: "investor",
-      label: "Investor",
-      href: "/routes/investor",
-      component: <PhambiliPortal label="Investor" />,
-    },
-    {
-      id: "partner",
-      label: "Partner",
-      href: "/routes/partner",
-      component: <PhambiliPortal label="Partner" />,
-    },
-    {
-      id: "buyer",
-      label: "Product Buyer",
-      href: "/routes/buyer",
-      component: <PhambiliPortal label="Product Buyer" />,
-    },
-    {
-      id: "supplier",
-      label: "Feedstock Supplier",
-      href: "/routes/supplier",
-      component: <PhambiliPortal label="Feedstock Supplier" />,
-    },
+    { id: "investor", label: "Investor", href: "/routes/investor", size: 140 },
+    { id: "partner", label: "Partner", href: "/routes/partner", size: 140 },
+    { id: "buyer", label: "Product Buyer", href: "/routes/buyer", size: 140 },
+    { id: "supplier", label: "Feedstock Supplier", href: "/routes/supplier", size: 140 },
   ];
 
-  
   return (
-    <div className="flex items-center justify-center min-h-[70vh]">
+    <main className="relative min-h-[70vh] flex items-center justify-center">
       <PortalCluster
         portals={portals}
-        wrapWithAnchor
-        LinkComponent={PortalLink}
+        /* Layout / placement */
+        top="50%"
+        left="50%"
+        defaultRadius={180}
+        defaultSize={140}
+        autoLayout
+        layoutStartAngle={-90}
+
+        /* Interaction / visuals */
         draggable={false}
         scalable
         blendMode="screen"
         showReactor={false}
+
+        /* Use transition-aware link */
+        wrapWithAnchor
+        LinkComponent={PortalLink}
+
+        className="z-10"
       />
-    </div>
+    </main>
   );
 }
 
-// Keep PageShell header/footer
 Home.shell = {
   kicker: "WELCOME TO PHAMBILI",
   title: "Choose Your Route",

@@ -8,8 +8,8 @@ export default function RoutePage({
   steps = [],
   autoEndTransition = true, // toggle teardown on mount
 }) {
-  // Ensure any in-flight overlay ends as soon as this page mounts
-  useEndPortalTransitionOnMount(0, autoEndTransition);
+  // Ensure any in-flight overlay ends shortly after mount (cannot beat minDuration)
+  useEndPortalTransitionOnMount(400, autoEndTransition);
 
   return (
     <div className="relative z-10 mx-auto max-w-[1100px] px-6 py-10">

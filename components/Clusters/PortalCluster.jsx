@@ -1,6 +1,6 @@
-// components/Clusters/PortalCluster.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useContext, useCallback } from "react";
 import PhambiliPortal from "@/components/Cards/PhambiliPortal"; // visual-only (no <a>)
+import { PortalTransitionContext } from "@/components/Transitions/PortalTransitionProvider";
 
 const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
 const DRAG_THRESHOLD_PX = 5;
@@ -34,7 +34,7 @@ export default function PortalCluster({
   scalable = true,
   blendMode = "screen",
   wrapWithAnchor = true,
-  LinkComponent, // e.g. PortalLink
+  LinkComponent, // e.g. Next.js Link or PortalLink
   scale,
   onScaleChange,
   position,
@@ -142,12 +142,35 @@ export default function PortalCluster({
     });
   }, [portals, ringConfig, count, defaultRadius, defaultSize, autoLayout, layoutStartAngle, scaleVal]);
 
+  // Block click if it was actually a drag - but ONLY when dragging is enabled
   const onPortalClickCapture = (e) => {
-    if (dragRef.current.moved) {
+    if (draggable && dragRef.current.moved) {
       e.preventDefault();
       e.stopPropagation();
     }
   };
+
+  // Transition-aware click handler (only used when no custom LinkComponent)
+  const ctx = useContext(PortalTransitionContext);
+  const handleNav = useCallback(
+    (e, href) => {
+      // allow new-tab/window gestures
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return;
+      // ignore click if a drag just occurred
+      if (draggable && dragRef.current.moved) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (ctx?.start) {
+        ctx.start(href);
+      } else {
+        // Fallback: hard navigation
+        window.location.href = href;
+      }
+    },
+    [draggable, ctx]
+  );
 
   return (
     <div
@@ -155,10 +178,10 @@ export default function PortalCluster({
       ref={rootRef}
       className={`pointer-events-auto select-none absolute ${className}`}
       style={{ top, left, transform: `translate(-50%, -50%) translate3d(${pos.x}px, ${pos.y}px, 0)` }}
-      onPointerDown={onPointerDownRoot}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
+      onPointerDown={draggable ? onPointerDownRoot : undefined}
+      onPointerMove={draggable ? onPointerMove : undefined}
+      onPointerUp={draggable ? endDrag : undefined}
+      onPointerCancel={draggable ? endDrag : undefined}
       onWheel={onWheel}
     >
       <div
@@ -178,21 +201,40 @@ export default function PortalCluster({
               key={p.id}
               className="absolute block"
               style={wrapperStyle}
-              onPointerDown={onPointerDownPortal}
+              onPointerDown={draggable ? onPointerDownPortal : undefined}
               onClickCapture={onPortalClickCapture}
               role="group"
             >
               {wrapWithAnchor ? (
                 (() => {
                   const Link = LinkComponent || "a";
+                  const commonProps = {
+                    "data-portal-link": true,
+                    "aria-label": p.label || p.id,
+                    className: "block",
+                    href: p.href || "#",
+                  };
+                  
+                  // Only add onClick override if no custom LinkComponent is provided
+                  if (!LinkComponent) {
+                    commonProps.onClick = (e) => handleNav(e, p.href || "#");
+                  }
+                  
                   return (
-                    <Link href={p.href || "#"} aria-label={p.label || p.id} className="block">
+                    <Link {...commonProps}>
                       <PhambiliPortal label={p.label} size={p.size} />
                     </Link>
                   );
                 })()
               ) : (
-                <PhambiliPortal label={p.label} size={p.size} />
+                <button
+                  type="button"
+                  className="block"
+                  onClick={(e) => handleNav(e, p.href || "#")}
+                  aria-label={p.label || p.id}
+                >
+                  <PhambiliPortal label={p.label} size={p.size} />
+                </button>
               )}
             </div>
           );

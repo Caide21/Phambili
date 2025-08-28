@@ -1,6 +1,6 @@
 // /pages/routes/[audience].jsx
 import React from "react";
-import Link from "next/link";
+import { PortalLink } from "@/components/Transitions";
 import { useRouter } from "next/router";
 import { AUDIENCE_SLUGS, audienceMeta, routesData } from "@/content/routes";
 
@@ -14,14 +14,14 @@ function StepCard({ step, index, total }) {
       <p className="text-emerald-100/80">{step.blurb}</p>
       {step.cta?.href && (
         <div className="mt-4">
-          <Link
+          <PortalLink
             href={step.cta.href}
             className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm
                        bg-emerald-300/20 hover:bg-emerald-300/30
                        text-emerald-50 border border-emerald-300/30 transition"
           >
             {step.cta.label} →
-          </Link>
+          </PortalLink>
         </div>
       )}
     </section>
@@ -76,18 +76,18 @@ export default function AudienceRoutePage({ audience, meta, steps }) {
       </div>
 
       <div className="mt-10 flex gap-3">
-        <Link
+        <PortalLink
           href="/"
           className="rounded-md px-3 py-2 text-sm bg-white/10 hover:bg-white/15 text-emerald-50 border border-white/20 transition"
         >
           ← Back to Home
-        </Link>
-        <Link
+        </PortalLink>
+        <PortalLink
           href="/contact"
           className="rounded-md px-3 py-2 text-sm bg-emerald-400/20 hover:bg-emerald-400/30 text-emerald-50 border border-emerald-300/40 transition"
         >
           Talk to the Team
-        </Link>
+        </PortalLink>
       </div>
     </div>
   );
