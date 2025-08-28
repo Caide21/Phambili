@@ -95,8 +95,21 @@ export default function AudienceRoutePage({ audience, meta, steps }) {
 
 // --- Next.js data hooks (static generation) ---
 export async function getStaticPaths() {
-  const unique = Array.from(new Set(AUDIENCE_SLUGS));
-  const paths = unique.map((audience) => ({ params: { audience } }));
+  const norm = (s) => String(s || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, '');
+
+  const unique = Array.from(
+    new Set((AUDIENCE_SLUGS || []).filter(Boolean).map(norm))
+  );
+
+  // If someone reintroduces duplicates upstream, fail locally with a clear error:
+  if (unique.length !== (AUDIENCE_SLUGS || []).filter(Boolean).length) {
+    console.warn('[getStaticPaths] Duplicates were removed from AUDIENCE_SLUGS; please fix the source list.');
+  }
+
+  const paths = unique.map(audience => ({ params: { audience } }));
   return { paths, fallback: false };
 }
 
